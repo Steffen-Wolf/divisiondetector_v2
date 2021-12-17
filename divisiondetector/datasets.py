@@ -1,7 +1,10 @@
 import os
+import logging
 import pandas as pd
 from torch.utils.data import Dataset
 from utils.gp_pipeline import GPPipeline
+
+logger = logging.getLogger()
 
 class DivisionDataset(Dataset):
     def __init__(self, label_path, img_path, window_size=(100,100,100), time_window=(1, 1), mode='ball', ball_radius=(10, 10, 10)):
@@ -11,7 +14,7 @@ class DivisionDataset(Dataset):
             '''
             raw_df = pd.read_csv(label_path, encoding='unicode_escape')
 
-            print("Data loaded.")
+            logger.info("Data loaded.")
 
             # Converting and formatting
             columns = ["Timepoint", "X", "Y", "Z"]
@@ -21,17 +24,16 @@ class DivisionDataset(Dataset):
             raw_df = raw_df.set_index("ID") # Set index to ID
 
             df = raw_df.apply(lambda x: pd.Series([int(x[0])] + [float(element) for element in x[1:]], index=columns), axis=1) # Convert coordinates and timepoints to numbers (from strings) and relabel
-            # df["Z"] = df["Z"] / 5 # Made redundant by voxel_size
 
-            print("Data processed.")
+            logger.info("Data processed.")
 
             # Gunpowder wants its CSVs separated with ', ' and not just ','
-            df = df.apply(lambda x: pd.Series([str(element) for element in x], index=columns), axis=1)
+            write_df = df.apply(lambda x: pd.Series([str(element)+',' for element in x], index=columns), axis=1)
             columns = ["Timepoint", "Z", "Y", "X"] # Reorder columns
-            df["Timepoint"] = df["Timepoint"].astype(int)
-            df[columns].assign(id=df.index.to_series()).to_csv(div_path, sep=' ', index=False, header=False)
+            write_df["Timepoint"] = write_df["Timepoint"].astype(int)
+            write_df[columns].assign(id=write_df.index.to_series()).to_csv(div_path, sep=' ', index=False, header=False)
 
-            print("Data written.")
+            logger.info("Data written.")
 
             return df
 
@@ -41,13 +43,13 @@ class DivisionDataset(Dataset):
                 df.columns = ["Timepoint", "Z", "Y", "X", "ID"]
                 df = df.set_index("ID")
 
-                print("File exists. Data loaded.")
+                logger.info("File exists. Data loaded.")
 
                 return df
             else:
                 return __getlabels(label_path, div_path)
 
-        print("Initialising...")
+        logger.info("Initialising...")
 
         div_path = "division.csv"
 
@@ -59,10 +61,9 @@ class DivisionDataset(Dataset):
 
         self.pipeline = GPPipeline(img_path, div_path, mode, ball_radius)
 
-        print("Pipeline created.")
+        logger.info("Pipeline created.")
 
     def __len__(self):
-        print(self.labels["Z"].max())
         return len(self.labels)
 
     def __getitem__(self, idx):
