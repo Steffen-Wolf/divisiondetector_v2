@@ -7,7 +7,25 @@ from utils.gp_pipeline import GPPipeline
 logger = logging.getLogger()
 
 class DivisionDataset(Dataset):
-    def __init__(self, data_path, vol_path, label_path, window_size=(100,100,100), time_window=(1, 1), mode='ball', ball_radius=(10, 10, 10)):
+    def __init__(self, all_labels_path, vol_path, truth_labels_path, window_size=(100,100,100), time_window=(1, 1), mode='ball', ball_radius=(10, 10, 10)):
+        '''
+        Initialising the Division Dataset
+
+        all_labels_path: For the model to iterate through while training/testing/validating. Can be both positive or
+        negative examples.
+
+        vol_path: The path to the Zarr file containing the light sheet video.
+
+        truth_labels_path: Ground truth for the video at vol_path. Includes only POSITIVE examples.
+
+        window_size: Size of the query window for data. Formatted (z, y, x)
+
+        time_window: Determines how many frames before and after the specified timepoint the pipeline should
+        return when querying.
+
+        mode: Mode of the point rasterisation. Can be either 'ball' or 'peak'
+        '''
+
         def __getlabels(label_path, div_path=None):
             '''
             Load and process label data
@@ -67,11 +85,11 @@ class DivisionDataset(Dataset):
 
         logger.info("Initialising...")
 
-        self.labels = __getCSV(data_path) # Data to train/validate/test with (positive and negative)
+        self.labels = __getCSV(all_labels_path) # Data to train/validate/test with (positive and negative)
         self.window_size = window_size
         self.time_window = time_window
 
-        self.pipeline = GPPipeline(vol_path, label_path, mode, ball_radius) # Data to train/validate/test on (positive only)
+        self.pipeline = GPPipeline(vol_path, truth_labels_path, mode, ball_radius) # Data to train/validate/test on (positive only)
 
         logger.info("Pipeline created.")
 
