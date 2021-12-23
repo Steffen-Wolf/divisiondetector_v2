@@ -1,10 +1,8 @@
 import torch
 import torch.nn as nn
-from funlib.learn.torch.models import UNet
+from .utils.div_unet import DivUNet
 from funlib.learn.torch.models.conv4d import Conv4d
 
-# TODO: This might not be 100 % correct
-# write a small test script and test if it works as expected
 class Unet4D(nn.Module):
 
     def __init__(
@@ -22,9 +20,8 @@ class Unet4D(nn.Module):
         self.out_channels = out_channels
         self.features_in_last_layer = features_in_last_layer
 
-        # TODO: check if this needs to be changed to (1,1,2,2)
         d_factors = [(1, 2, 2), ] * depth
-        self.backbone = UNet(in_channels=self.in_channels,
+        self.backbone = DivUNet(in_channels=self.in_channels,
                              num_fmaps=num_fmaps,
                              fmap_inc_factor=fmap_inc_factor,
                              downsample_factors=d_factors,
