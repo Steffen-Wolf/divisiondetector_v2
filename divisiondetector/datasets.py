@@ -2,7 +2,7 @@ import os
 import logging
 import pandas as pd
 from torch.utils.data import Dataset
-from utils.gp_pipeline import GPPipeline
+from .utils.gp_pipeline import GPPipeline
 
 logger = logging.getLogger()
 

@@ -15,7 +15,8 @@ class DivisionDataModule(pl.LightningDataModule):
                  loader_workers=10):
         super().__init__()
 
-        self.config = json.loads(config_path) # Dictionary
+        with open(config_path, 'r') as config:
+            self.config = json.load(config) # Dictionary
         self.window_size = tuple(window_size)
         self.batch_size = batch_size
         self.loader_workers = loader_workers
@@ -31,7 +32,7 @@ class DivisionDataModule(pl.LightningDataModule):
             for paths in path_list:
                 datasets.append(DivisionDataset(
                     paths['data'],
-                    paths['volume'],
+                    paths['video'],
                     paths['labels'],
                     window_size,
                     time_window,
@@ -75,6 +76,6 @@ class DivisionDataModule(pl.LightningDataModule):
         except argparse.ArgumentError:
             pass
         parser.add_argument('--loader_workers', type=int, default=8)
-        parser.add_argument('--window_size', nargs=3, type=int, default=500) # (z, y, x)
+        parser.add_argument('--window_size', nargs=3, type=int, default=(500, 500, 500)) # (z, y, x)
         parser.add_argument('--config_path', type=str)
         return parser
