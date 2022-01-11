@@ -11,6 +11,10 @@ from torchvision import transforms
 from divisiondetector.models import Unet4D
 from divisiondetector.utils.utils import BuildFromArgparse
 
+import logging
+
+logger = logging.getLogger()
+
 class DivisionDetectorTrainer(pl.LightningModule, BuildFromArgparse):
     def __init__(self,
                  in_channels,
@@ -38,7 +42,11 @@ class DivisionDetectorTrainer(pl.LightningModule, BuildFromArgparse):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self.forward(x)
+        y_hat = self.forward(x) # TODO: Crop function for y (crop to shape of y_hat) - use an external parameter
+
+        logger.log('y_hat:', y_hat.shape)
+        logger.log('y:', y.shape)
+        
         loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log('train_loss', loss, on_epoch=True)
         return loss
@@ -63,5 +71,5 @@ class DivisionDetectorTrainer(pl.LightningModule, BuildFromArgparse):
         parser.add_argument('--in_channels', type=int, default=2)
         parser.add_argument('--out_channels', type=int, default=2)
         parser.add_argument('--initial_learning_rate', type=float, default=1e-4)
-        parser.add_argument('--unet_num_fmaps', type=int, default=32)
+        parser.add_argument('--unet_num_fmaps', type=int, default=32) # TODO: Add crop function argument here (integer)
         return parser

@@ -72,10 +72,10 @@ class DivisionDataModule(pl.LightningDataModule):
         parser = argparse.ArgumentParser(
             parents=[parent_parser], add_help=False)
         try:
-            parser.add_argument('--batch_size', type=int, default=8)
+            parser.add_argument('--batch_size', type=int, default=2)
         except argparse.ArgumentError:
             pass
         parser.add_argument('--loader_workers', type=int, default=8)
-        parser.add_argument('--window_size', nargs=3, type=int, default=(500, 500, 500)) # (z, y, x)
+        parser.add_argument('--window_size', nargs=3, type=int, default=(160, 128, 128)) # (z, y, x)
         parser.add_argument('--config_path', type=str)
         return parser

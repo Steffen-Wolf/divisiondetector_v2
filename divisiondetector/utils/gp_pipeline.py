@@ -1,7 +1,11 @@
 import gunpowder as gp
 from gunpowder.nodes import simple_augment
+from .div_csv_points_source import DivCsvPointsSource
 import math
 import zarr
+import logging
+
+logger = logging.getLogger()
 
 class GPPipeline():
     def __init__(self, vol_path, div_path, mode, ball_radius): # Ball radius (z, y, x)
@@ -15,7 +19,7 @@ class GPPipeline():
                 )}
             ) + gp.Pad(vol_key, None))
 
-            div_source = (gp.CsvPointsSource(
+            div_source = (DivCsvPointsSource(
                 self.div_path,
                 div_key,
                 ndims=4, # (Timepoint, Z, Y, X)
@@ -61,7 +65,7 @@ class GPPipeline():
         # Check rasterisation mode. If invalid, default to 'ball'
         if mode != 'ball' and mode != 'peak':
             mode = 'ball'
-            print("Rasterisation mode not valid. Defaulting to 'ball'.")
+            logger.log("Rasterisation mode not valid. Defaulting to 'ball'.")
 
         self.pipeline = compile_pipeline(
             self.vol_key,
