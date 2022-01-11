@@ -36,7 +36,7 @@ class GPPipeline():
                 )
             )
 
-            normalise = gp.Normalize(vol_key)
+            normalise = gp.Normalize(vol_key, factor=1/3000)
             simple_augment = gp.SimpleAugment(mirror_only=[1, 2, 3], transpose_only=[1, 2, 3])
 
             pipeline = (
@@ -103,12 +103,16 @@ class GPPipeline():
         )
         
         request[self.divr_key] = label_roi
-
         request[self.div_key] = label_roi
 
         batch = self.pipeline.request_batch(request)
 
-        return batch[self.vol_key].data, batch[self.divr_key].data, batch[self.div_key]
+        # Reducing the dimensions of the balls from real-world to voxels
+        ball_array = batch[self.divr_key].data
+        if self.resolution[1] > 1:
+            ball_array = ball_array[..., self.resolution[1]//2::self.resolution[1], :, :]
+
+        return batch[self.vol_key].data, ball_array, batch[self.div_key]
 
     def clear(self):
         self.pipeline.internal_teardown()
